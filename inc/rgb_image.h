@@ -5,9 +5,16 @@
 
 class RGBImage : public Image{
 private:
-
+  int*** pixels;
 public:
-
+  RGBImage();
+  RGBImage(int theWidth, int theHeight, int*** thePixels);
+  ~RGBImage();
+  bool LoadImage(string filename);
+  void DumpImage(string filename);
+  void Display_X_Server();
+  void Display_ASCII();
+  void Display_CMD();
 };
 
 #endif

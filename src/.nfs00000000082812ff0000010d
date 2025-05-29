@@ -21,7 +21,7 @@ GrayImage::~GrayImage() {
 bool GrayImage::LoadImage(string filename) {
   int** loaded_pixels = loader.Load_Gray(filename, &width, &height);    
   if(!loaded_pixels) {
-    cerr << "Failed to load gray image: " << filename << endl;
+    cerr << "Failed to load image: " << filename << endl;
     return false;
   }
   if(pixels) {
