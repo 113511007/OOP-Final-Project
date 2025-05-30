@@ -8,9 +8,10 @@ class Image{
 protected:
   int width;
   int height;
+  int channels;
   Data_Loader loader;
 public:
-  Image(int theWidth, int theHeight);
+  Image(int theWidth, int theHeight, int theChannels);
   ~Image();
   virtual bool LoadImage(string filename);
   virtual void DumpImage(string filename);
@@ -19,6 +20,9 @@ public:
   virtual void Display_CMD();
   int get_width();
   int get_height();
+  int get_channels();
+  virtual int** gray_get_pixels();
+  virtual int*** rgb_get_pixels();
 };
 
 #endif
