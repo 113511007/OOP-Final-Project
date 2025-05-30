@@ -1,8 +1,8 @@
 #include "gray_image.h"
 using namespace std;
 
-GrayImage::GrayImage(): Image(0, 0) {};
-GrayImage::GrayImage(int theWidth, int theHeight, int** thePixels): Image(theWidth, theHeight) {
+GrayImage::GrayImage(): Image(0, 0, 0), pixels(nullptr) {}
+GrayImage::GrayImage(int theWidth, int theHeight, int** thePixels): Image(theWidth, theHeight, 1) {
   pixels = new int* [theHeight];
   for(int i = 0; i < theHeight; i++) {
     pixels[i] = new int [theWidth];
@@ -63,3 +63,5 @@ void GrayImage::Display_ASCII() {
 }
 
 void GrayImage::Display_CMD() {}
+
+int** GrayImage::gray_get_pixels() {return pixels;}
