@@ -6,7 +6,7 @@
 
 using namespace std;
 
-bool ImageEncryption::encode(Image* image, string& message) {
+bool ImageEncryption::encode(Image* image, const string& message) {
   if(!image || message.empty()) return false;
   if(image->get_channels() != 3) {
     cerr << "Only RGB images are supported for encoding\n";
@@ -37,7 +37,7 @@ bool ImageEncryption::encode(Image* image, string& message) {
   return true;
 }
 
-string ImageEncryption::decode(Image* image) {
+string ImageEncryption::decode(const Image* image) {
   if(!image || image->get_channels() != 3) {
     cerr << "Invalid image for decoding\n";
   }
@@ -67,12 +67,12 @@ string ImageEncryption::decode(Image* image) {
   return bitsToString(bits);
 }
 
-bool ImageEncryption::checkCapacity(Image* image, size_t messageLength) {
+bool ImageEncryption::checkCapacity(const Image* image, size_t messageLength) {
   int availableBits = (image->get_width() * image->get_height() * 3) - 32;
-  return ((int)messageLength <= availableBits);
+  return (messageLength <= availableBits);
 }
 
-vector<bool> ImageEncryption::stringToBits(string& message) {
+vector<bool> ImageEncryption::stringToBits(const string& message) {
   vector<bool> bits;
   for(char c : message) {
     for(int i = 7; i >= 0; --i) {
@@ -82,7 +82,7 @@ vector<bool> ImageEncryption::stringToBits(string& message) {
   return bits;
 }
 
-string ImageEncryption::bitsToString(vector<bool>& bits) {
+string ImageEncryption::bitsToString(const vector<bool>& bits) {
   string message;
   for(size_t i = 0; i < bits.size(); i += 8) {
     char c = 0;
