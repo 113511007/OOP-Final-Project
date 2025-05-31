@@ -29,7 +29,6 @@ int main() {
   while(running) {
     printMenu();
     cin >> choice;
-
     switch(choice) {
       case 1: {
 	string gray_filename;
