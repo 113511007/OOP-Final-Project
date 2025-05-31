@@ -12,7 +12,7 @@ protected:
   Data_Loader loader;
 public:
   Image(int theWidth, int theHeight, int theChannels);
-  ~Image();
+  virtual ~Image();
   virtual bool LoadImage(string filename);
   virtual void DumpImage(string filename);
   virtual void Display_X_Server();

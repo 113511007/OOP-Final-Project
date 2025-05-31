@@ -1,7 +1,7 @@
 #include "gray_image.h"
 using namespace std;
 
-GrayImage::GrayImage(): Image(0, 0, 0), pixels(nullptr) {}
+GrayImage::GrayImage(): Image(0, 0, 2), pixels(nullptr) {}
 GrayImage::GrayImage(int theWidth, int theHeight, int** thePixels): Image(theWidth, theHeight, 1) {
   pixels = new int* [theHeight];
   for(int i = 0; i < theHeight; i++) {

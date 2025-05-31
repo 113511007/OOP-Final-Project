@@ -1,7 +1,7 @@
 #include "rgb_image.h"
 using namespace std;
 
-RGBImage::RGBImage(): Image(0, 0, 0), pixels(nullptr) {}
+RGBImage::RGBImage(): Image(0, 0, 3), pixels(nullptr) {}
 RGBImage::RGBImage(int theWidth, int theHeight, int*** thePixels): Image(theWidth, theHeight, 3) {
   pixels = new int** [theHeight];
   for(int i = 0; i < theHeight; i++) {
