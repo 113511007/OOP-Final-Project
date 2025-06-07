@@ -1,5 +1,5 @@
-#ifndef _RGB_IMAGE_H_
-#define _RGB_IMAGE_H_
+#ifndef RGB_IMAGE_H_
+#define RGB_IMAGE_H_
 
 #include "image.h"
 
