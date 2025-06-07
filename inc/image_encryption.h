@@ -1,19 +1,17 @@
-#ifndef _IMAGE_ENCRYPTION_H_
-#define _IMAGE_ENCRYPTION_H_
+#ifndef IMAGE_ENCRYPTION_H
+#define IMAGE_ENCRYPTION_H
+
+#include "image.h"
 #include <string>
 #include <vector>
-#include "rgb_image.h"
 using namespace std;
 
-class ImageEncryption{
-public:
-  static bool encode(Image* image, string& message);
-  static string decode(Image* image);
+#define ENCRYPT_LSB          0x01
+#define DECRYPT_LSB          0x02
+#define ENCRYPT_XOR          0x04
+#define ENCRYPT_CAESAR       0x08
+#define ENCRYPT_SUBSTITUTION 0x16
 
-private:
-  static vector<bool> stringToBits(std::string& message);
-  static string bitsToString(vector<bool>& bits);
-  static bool checkCapacity(Image* image, size_t messageLength);
-};
+void applyEncryption(Image* image, uint8_t options, const string& message, const string& key, int shift, const vector<int>& table);
 
 #endif

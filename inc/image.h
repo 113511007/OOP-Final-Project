@@ -1,5 +1,5 @@
-#ifndef _IMAGE_H_
-#define _IMAGE_H_
+#ifndef IMAGE_H_
+#define IMAGE_H_
 #include <string>
 #include "data_loader.h"
 using namespace std;

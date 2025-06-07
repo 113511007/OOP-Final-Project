@@ -4,12 +4,7 @@
 #include <algorithm>
 using namespace std;
 
-void applyFilters(Image& image, uint8_t options) {
-  if(options & FILTER_FLIP) horizontalFlip(image);
-  if(options & FILTER_MOSAIC) mosaic(image);
-  if(options & FILTER_GAUSSIAN) gaussianBlur(image);
-  if(options & FILTER_LAPLACIAN) laplacianSharpen(image);
-}
+namespace {
 
 void horizontalFlip(Image& image) {
   int width = image.get_width();
@@ -35,11 +30,11 @@ void horizontalFlip(Image& image) {
   }
 }
 
-void mosaic(Image& image) {
+void mosaic(Image& image, int mosaic_block_size) {
   int width = image.get_width();
   int height = image.get_height();
   int channels = image.get_channels();
-  int blockSize = 5;
+  int blockSize = mosaic_block_size;
   if(channels == 1) {
     int** pixels = image.gray_get_pixels();
     for(int i = 0; i < height; i += blockSize) {
@@ -85,33 +80,6 @@ void mosaic(Image& image) {
     }
   }
 }
-
-void gaussianBlur(Image& image) {
-  const double SD = 1.0;
-  const int radius = static_cast<int>(std::ceil(3 * SD));
-  const int size = 2 * radius + 1;
-  std::vector<std::vector<double>> kernel(size, std::vector<double>(size));
-  double sum = 0.0;
-  for(int i = -radius; i <= radius; ++i) {
-    for(int j = -radius; j <= radius; ++j) {
-      double value = exp(-(i * i + j * j) / (2 * SD * SD)) / (2 * M_PI * SD * SD);
-      kernel[i + radius][j + radius] = value;
-      sum += value;
-    }
-  }
-  for(auto& row : kernel) {
-    for(auto& v : row) {
-      v /= sum;
-    }
-  }
-  applyKernel(image, kernel);
-}
-
-void laplacianSharpen(Image& image) {
-  vector<vector<double>> kernel = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
-  applyKernel(image, kernel);
-}
-
 
 void applyKernel(Image& image, const vector<vector<double>>& kernel) {
   int width = image.get_width();
@@ -183,4 +151,131 @@ void applyKernel(Image& image, const vector<vector<double>>& kernel) {
     }
     delete [] temp;
   }
+}
+
+void gaussianBlur(Image& image, double gaussian_sd) {
+  const double SD = gaussian_sd;
+  const int radius = static_cast<int>(std::ceil(3 * SD));
+  const int size = 2 * radius + 1;
+  std::vector<std::vector<double>> kernel(size, std::vector<double>(size));
+  double sum = 0.0;
+  for(int i = -radius; i <= radius; ++i) {
+    for(int j = -radius; j <= radius; ++j) {
+      double value = exp(-(i * i + j * j) / (2 * SD * SD)) / (2 * M_PI * SD * SD);
+      kernel[i + radius][j + radius] = value;
+      sum += value;
+    }
+  }
+  for(auto& row : kernel) {
+    for(auto& v : row) {
+      v /= sum;
+    }
+  }
+  applyKernel(image, kernel);
+}
+
+void laplacianSharpen(Image& image) {
+  vector<vector<double>> kernel = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+  applyKernel(image, kernel);
+}
+
+void fisheye(Image& image) {
+  int width = image.get_width();
+  int height = image.get_height();
+  int*** pixels = image.rgb_get_pixels();
+  int*** copy = new int**[height];
+  for(int i = 0; i < height; ++i) {
+    copy[i] = new int*[width];
+    for(int j = 0; j < width; ++j) {
+      copy[i][j] = new int[3];
+      for(int k = 0; k < 3; ++k) {
+        copy[i][j][k] = pixels[i][j][k];
+      }
+    }
+  }
+
+  double cx = width / 2.0;
+  double cy = height / 2.0;
+  double rmax = sqrt(cx * cx + cy * cy);
+
+  for(int y = 0; y < height; ++y) {
+    for(int x = 0; x < width; ++x) {
+      double dx = x - cx;
+      double dy = y - cy;
+      double r = sqrt(dx * dx + dy * dy);
+      double nr = r * r / rmax;
+      double theta = atan2(dy, dx);
+      int sx = static_cast<int>(cx + nr * cos(theta));
+      int sy = static_cast<int>(cy + nr * sin(theta));
+      if(sx >= 0 && sx < width && sy >= 0 && sy < height) {
+        for(int k = 0; k < 3; ++k) {
+          pixels[y][x][k] = copy[sy][sx][k];
+        }
+      }
+    }
+  }
+
+  for(int i = 0; i < height; ++i) {
+    for(int j = 0; j < width; ++j) {
+      delete[] copy[i][j];
+    }
+    delete[] copy[i];
+  }
+  delete[] copy;
+}
+
+void coldWarmAdjust(Image& image, bool warm) {
+  int width = image.get_width();
+  int height = image.get_height();
+  int*** pixels = image.rgb_get_pixels();
+  int delta = 30;
+  for(int i = 0; i < height; ++i) {
+    for(int j = 0; j < width; ++j) {
+      if(warm) {
+        pixels[i][j][0] = min(255, pixels[i][j][0] + delta); // R
+        pixels[i][j][2] = max(0, pixels[i][j][2] - delta);   // B
+      } else {
+        pixels[i][j][0] = max(0, pixels[i][j][0] - delta);
+        pixels[i][j][2] = min(255, pixels[i][j][2] + delta);
+      }
+    }
+  }
+}
+
+void luminanceEnhance(Image& image, double luminance_scale) {
+  int width = image.get_width();
+  int height = image.get_height();
+  int channels = image.get_channels();
+  if(channels == 1) {
+    int** pixels = image.gray_get_pixels();
+    for(int i = 0; i < height; ++i) {
+      for(int j = 0; j < width; ++j) {
+        pixels[i][j] = min(255, static_cast<int>(pixels[i][j] * (1 + luminance_scale)));
+      }
+    }
+  } else {
+    int*** pixels = image.rgb_get_pixels();
+    for(int i = 0; i < height; ++i) {
+      for(int j = 0; j < width; ++j) {
+        double scale = 1.2;
+        for(int k = 0; k < 3; ++k) {
+          int val = static_cast<int>(pixels[i][j][k] * scale);
+          pixels[i][j][k] = min(255, val);
+        }
+      }
+    }
+  }
+}
+
+}
+
+void applyFilters(Image& image, uint8_t options, int mosaic_block_size, double gaussian_sd, double luminance_scale) {
+  if(options & FILTER_FLIP) horizontalFlip(image);
+  if(options & FILTER_MOSAIC) mosaic(image, mosaic_block_size);
+  if(options & FILTER_GAUSSIAN) gaussianBlur(image, gaussian_sd);
+  if(options & FILTER_LAPLACIAN) laplacianSharpen(image);
+  if(options & FILTER_FISHEYE) fisheye(image);
+  if(options & FILTER_WARM) coldWarmAdjust(image, true);
+  if(options & FILTER_COLD) coldWarmAdjust(image, false);
+  if(options & FILTER_LUMINANCE) luminanceEnhance(image, luminance_scale);
 }
