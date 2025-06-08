@@ -1,4 +1,7 @@
 #include "main_function.h"
+#include <sys/stat.h>
+#include <libgen.h>
+
 using namespace std;
 
 void main_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
@@ -51,10 +54,17 @@ void command_mode_menu(vector<Image*>& loaded_images, vector<string>& image_name
     cout << "=================================\n";
     cout << "1. Image Analysis Tools\n";
     cout << "2. Filter Processing\n";
-    cout << "3. Image Encryption\n";
-    cout << "4. Save and Return\n";
+    cout << "3. Image Encryption (Steganography)\n";
+    cout << "4. Image Decryption (Steganography)\n";
+    cout << "5. Image Encryption (Cryptography)\n";
+    cout << "6. Image Decryption (Cryptography)\n";
+    cout << "7. Save and Return\n";
+    cout << "8. Remove an Image\n";
+    cout << "9. Clear All Images\n";
     cout << "Enter option: ";
     cin >> choice;
+
+    bool decrypt = (choice == 4 || choice == 6);
 
     switch(choice) {
       case 1:
@@ -63,11 +73,38 @@ void command_mode_menu(vector<Image*>& loaded_images, vector<string>& image_name
       case 2:
         filter_menu(loaded_images, image_names);
         break;
-      case 3:
-        encryption_menu(loaded_images, image_names);
+      case 3: case 4:
+        steganography_menu(loaded_images, image_names, decrypt);
         break;
-      case 4:
+      case 5: case 6:
+        cryptography_menu(loaded_images, image_names, decrypt);
+        break;
+      case 7:
         save_and_return(loaded_images, image_names);
+        return;
+      case 8: {
+        int index;
+        cout << "Enter the number of the image to remove: ";
+        cin >> index;
+        if (index >= 1 && index <= static_cast<int>(loaded_images.size())) {
+          delete loaded_images[index - 1];
+          loaded_images.erase(loaded_images.begin() + index - 1);
+          image_names.erase(image_names.begin() + index - 1);
+          cout << "Image removed.\n";
+        } else {
+          cout << "Invalid index.\n";
+        }
+        press_enter_to_continue();
+        break;
+      }
+      case 9:
+        for (Image* img : loaded_images) {
+          delete img;
+        }
+        loaded_images.clear();
+        image_names.clear();
+        cout << "All loaded images have been cleared.\n";
+        press_enter_to_continue();
         return;
       default:
         cout << "Invalid option. Please try again.\n";
@@ -75,12 +112,4 @@ void command_mode_menu(vector<Image*>& loaded_images, vector<string>& image_name
     }
   }
   while(true);
-}
-
-void save_and_return(vector<Image*>& loaded_images, vector<string>& image_names) {
-  for (size_t i = 0; i < loaded_images.size(); ++i) {
-    loaded_images[i]->DumpImage(image_names[i]);
-    cout << "Image saved as: " << image_names[i] << "\n";
-  }
-  press_enter_to_continue();
 }

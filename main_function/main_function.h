@@ -17,7 +17,9 @@ void command_mode_menu(std::vector<Image*>& loaded_images, std::vector<std::stri
 void load_image_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
 void image_analysis_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
 void filter_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
-void encryption_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
-void save_and_return(vector<Image*>& loaded_images, vector<string>& image_names);
+void steganography_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names, bool decrypt);
+void cryptography_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names, bool decrypt);
+void save_and_return(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
+void photo_mosaic_menu(std::vector<Image*>& loaded_images, std::vector<std::string>& image_names);
 
 #endif

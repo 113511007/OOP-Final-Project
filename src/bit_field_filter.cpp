@@ -174,70 +174,114 @@ void gaussianBlur(Image& image, double gaussian_sd) {
   applyKernel(image, kernel);
 }
 
-void laplacianSharpen(Image& image) {
-  vector<vector<double>> kernel = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+void laplacianSharpen(Image& image, double strength) {
+  vector<vector<double>> base_kernel = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}};
+  vector<vector<double>> kernel(3, vector<double>(3));
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      kernel[i][j] = (i == 1 && j == 1) ? (1.0 + strength) : (base_kernel[i][j] * strength);
+    }
+  }
   applyKernel(image, kernel);
 }
 
-void fisheye(Image& image) {
+void fisheye(Image& image, double distortion, double centerX, double centerY) {
   int width = image.get_width();
   int height = image.get_height();
-  int*** pixels = image.rgb_get_pixels();
-  int*** copy = new int**[height];
-  for(int i = 0; i < height; ++i) {
-    copy[i] = new int*[width];
-    for(int j = 0; j < width; ++j) {
-      copy[i][j] = new int[3];
-      for(int k = 0; k < 3; ++k) {
-        copy[i][j][k] = pixels[i][j][k];
-      }
-    }
+  int channels = image.get_channels();
+
+  Image* copy;
+  if (channels == 3) {
+    copy = new RGBImage(width, height, image.rgb_get_pixels());
+  } 
+  else {
+    copy = new GrayImage(width, height, image.gray_get_pixels());
   }
 
-  double cx = width / 2.0;
-  double cy = height / 2.0;
-  double rmax = sqrt(cx * cx + cy * cy);
+  double cx = width * centerX;
+  double cy = height * centerY;
+  double rmax = sqrt(cx * cx + cy * cy) * 0.8;
 
-  for(int y = 0; y < height; ++y) {
-    for(int x = 0; x < width; ++x) {
-      double dx = x - cx;
-      double dy = y - cy;
-      double r = sqrt(dx * dx + dy * dy);
-      double nr = r * r / rmax;
-      double theta = atan2(dy, dx);
-      int sx = static_cast<int>(cx + nr * cos(theta));
-      int sy = static_cast<int>(cy + nr * sin(theta));
-      if(sx >= 0 && sx < width && sy >= 0 && sy < height) {
-        for(int k = 0; k < 3; ++k) {
-          pixels[y][x][k] = copy[sy][sx][k];
+  if (channels == 3) {
+    int*** pixels = image.rgb_get_pixels();
+    int*** copy_pixels = copy->rgb_get_pixels();
+
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        double dx = x - cx;
+        double dy = y - cy;
+        double r = sqrt(dx * dx + dy * dy);
+        double nr = r * (1.0 + distortion * (r / rmax));
+        double theta = atan2(dy, dx);
+        int sx = static_cast<int>(cx + nr * cos(theta));
+        int sy = static_cast<int>(cy + nr * sin(theta));
+
+        if (sx >= 0 && sx < width && sy >= 0 && sy < height) {
+          for (int k = 0; k < 3; ++k) {
+            pixels[y][x][k] = copy_pixels[sy][sx][k];
+          }
         }
       }
     }
-  }
+  } 
+  else {
+    int** pixels = image.gray_get_pixels();
+    int** copy_pixels = copy->gray_get_pixels();
 
-  for(int i = 0; i < height; ++i) {
-    for(int j = 0; j < width; ++j) {
-      delete[] copy[i][j];
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        double dx = x - cx;
+        double dy = y - cy;
+        double r = sqrt(dx * dx + dy * dy);
+        double nr = r * (1.0 + distortion * (r / rmax));
+        double theta = atan2(dy, dx);
+        int sx = static_cast<int>(cx + nr * cos(theta));
+        int sy = static_cast<int>(cy + nr * sin(theta));
+
+        if (sx >= 0 && sx < width && sy >= 0 && sy < height) {
+          pixels[y][x] = copy_pixels[sy][sx];
+        }
+     }
     }
-    delete[] copy[i];
   }
-  delete[] copy;
+  delete copy;
 }
 
-void coldWarmAdjust(Image& image, bool warm) {
+void coldWarmAdjust(Image& image, bool warm, int intensity, bool preserveLuminance) {
   int width = image.get_width();
   int height = image.get_height();
   int*** pixels = image.rgb_get_pixels();
-  int delta = 30;
-  for(int i = 0; i < height; ++i) {
-    for(int j = 0; j < width; ++j) {
+    
+  for(int y = 0; y < height; ++y) {
+    for(int x = 0; x < width; ++x) {
+      int r = pixels[y][x][0];
+      int g = pixels[y][x][1];
+      int b = pixels[y][x][2];
+            
+      double luminance = preserveLuminance ? (0.299 * r + 0.587 * g + 0.114 * b) : -1;
+
       if(warm) {
-        pixels[i][j][0] = min(255, pixels[i][j][0] + delta); // R
-        pixels[i][j][2] = max(0, pixels[i][j][2] - delta);   // B
-      } else {
-        pixels[i][j][0] = max(0, pixels[i][j][0] - delta);
-        pixels[i][j][2] = min(255, pixels[i][j][2] + delta);
+        r = min(255, r + intensity);
+        b = max(0, b - intensity/2);
+        } 
+      else {
+        r = max(0, r - intensity/2);
+        b = min(255, b + intensity);
       }
+            
+      if(preserveLuminance) {
+        double new_luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        if(new_luminance > 0) {
+          double ratio = luminance / new_luminance;
+          r = min(255, static_cast<int>(r * ratio));
+          g = min(255, static_cast<int>(g * ratio));
+          b = min(255, static_cast<int>(b * ratio));
+        }
+      }
+            
+      pixels[y][x][0] = r;
+      pixels[y][x][1] = g;
+      pixels[y][x][2] = b;
     }
   }
 }
@@ -250,16 +294,15 @@ void luminanceEnhance(Image& image, double luminance_scale) {
     int** pixels = image.gray_get_pixels();
     for(int i = 0; i < height; ++i) {
       for(int j = 0; j < width; ++j) {
-        pixels[i][j] = min(255, static_cast<int>(pixels[i][j] * (1 + luminance_scale)));
+        pixels[i][j] = min(255, static_cast<int>(pixels[i][j] * (1 + 0.01 * luminance_scale)));
       }
     }
   } else {
     int*** pixels = image.rgb_get_pixels();
     for(int i = 0; i < height; ++i) {
       for(int j = 0; j < width; ++j) {
-        double scale = 1.2;
         for(int k = 0; k < 3; ++k) {
-          int val = static_cast<int>(pixels[i][j][k] * scale);
+          int val = static_cast<int>(pixels[i][j][k] * (1 + 0.01 * luminance_scale));
           pixels[i][j][k] = min(255, val);
         }
       }
@@ -269,13 +312,13 @@ void luminanceEnhance(Image& image, double luminance_scale) {
 
 }
 
-void applyFilters(Image& image, uint8_t options, int mosaic_block_size, double gaussian_sd, double luminance_scale) {
+void applyFilters(Image& image, uint8_t options, int mosaic_size, int gaussian_sd, double laplacian_strength, double fisheye_dist, double fisheye_x, double fisheye_y, int cold_intensity, bool cold_keep_lum, int warm_intensity, bool warm_keep_lum, int luminance_scale) {
   if(options & FILTER_FLIP) horizontalFlip(image);
-  if(options & FILTER_MOSAIC) mosaic(image, mosaic_block_size);
+  if(options & FILTER_MOSAIC) mosaic(image, mosaic_size);
   if(options & FILTER_GAUSSIAN) gaussianBlur(image, gaussian_sd);
-  if(options & FILTER_LAPLACIAN) laplacianSharpen(image);
-  if(options & FILTER_FISHEYE) fisheye(image);
-  if(options & FILTER_WARM) coldWarmAdjust(image, true);
-  if(options & FILTER_COLD) coldWarmAdjust(image, false);
+  if(options & FILTER_LAPLACIAN) laplacianSharpen(image, laplacian_strength);
+  if(options & FILTER_FISHEYE) fisheye(image, fisheye_dist, fisheye_x, fisheye_y);
+  if(options & FILTER_WARM) coldWarmAdjust(image, true, warm_intensity, warm_keep_lum);
+  if(options & FILTER_COLD) coldWarmAdjust(image, false, cold_intensity, cold_keep_lum);
   if(options & FILTER_LUMINANCE) luminanceEnhance(image, luminance_scale);
 }
