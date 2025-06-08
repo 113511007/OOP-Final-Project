@@ -1,4 +1,4 @@
-# ompiler & Linker settings
+# ompiler & Linker settings 
 CXX = g++
 CXXFLAGS = -I ./inc -I ./main_function -I ./third-party/CImg -I ./third-party/libjpeg -I ./Data-Loader -std=c++11
 OPTFLAGS = -march=native -flto -funroll-loops -finline-functions -ffast-math -O3

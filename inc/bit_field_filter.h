@@ -14,6 +14,6 @@
 #define FILTER_COLD       0x40
 #define FILTER_LUMINANCE  0x80
 
-void applyFilters(Image& image, uint8_t options, int mosaic_block_size, double gaussian_sd, double luminance_scale);
+void applyFilters(Image& image, uint8_t options, int mosaic_size, int gaussian_sd, double laplacian_strength, double fisheye_dist, double fisheye_x, double fisheye_y, int cold_intensity, bool cold_keep_lum, int warm_intensity, bool warm_keep_lum, int luminance_scale);
 
 #endif
