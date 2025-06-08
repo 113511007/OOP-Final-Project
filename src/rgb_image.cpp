@@ -25,37 +25,44 @@ RGBImage::~RGBImage() {
 }
 
 bool RGBImage::LoadImage(string filename) {
+  int old_width = width;
+  int old_height = height;
+
   int*** loaded_pixels = loader.Load_RGB(filename, &width, &height);    
-  if(!loaded_pixels) {
+  if (!loaded_pixels) {
     cerr << "Failed to load RGB image: " << filename << endl;
     return false;
   }
-  if(pixels) {
-    for(int i = 0; i < height; i++) {
-      for(int j = 0; j < width; j++) {
-        delete [] pixels[i][j];
+
+  if (pixels) {
+    for (int i = 0; i < old_height; i++) {
+      for (int j = 0; j < old_width; j++) {
+        delete[] pixels[i][j];
       }
-      delete [] pixels[i];
+      delete[] pixels[i];
     }
-    delete [] pixels;
+    delete[] pixels;
   }
+
   pixels = new int** [height];
-  for(int i = 0; i < height; i++) {
+  for (int i = 0; i < height; i++) {
     pixels[i] = new int* [width];
-    for(int j = 0; j < width; j++) {
-      pixels[i][j] = new int [3];
-      for(int k = 0; k < 3; k++) {
+    for (int j = 0; j < width; j++) {
+      pixels[i][j] = new int[3];
+      for (int k = 0; k < 3; k++) {
         pixels[i][j][k] = loaded_pixels[i][j][k];
       }
     }
   }
-  for(int i = 0; i < height; i++) {
-    for(int j = 0; j < width; j++) {
-      delete [] loaded_pixels[i][j];
+
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      delete[] loaded_pixels[i][j];
     }
-    delete [] loaded_pixels[i];
+    delete[] loaded_pixels[i];
   }
   delete[] loaded_pixels;
+
   return true;
 }
 

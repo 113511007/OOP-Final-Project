@@ -52,13 +52,17 @@ void cryptography_menu(vector<Image*>& loaded_images, vector<string>& image_name
     cout << "Enter option: ";
     cin >> choice;
 
-    Image* img = loaded_images[img_choice-1];
-    if (img->get_channels() == 1) img = new GrayImage (loaded_images[img_choice-1]->get_width(), loaded_images[img_choice-1]->get_height(), loaded_images[img_choice-1]->gray_get_pixels());
-    else img = new RGBImage (loaded_images[img_choice-1]->get_width(), loaded_images[img_choice-1]->get_height(), loaded_images[img_choice-1]->rgb_get_pixels());
-
     string input;
     switch (choice) {
       case 1: {
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
         cout << "Enter XOR key (or 'd' for default 'secret_key'): ";
         cin >> input;
         xor_key = (input == "d") ? "secret_key" : input;
@@ -77,6 +81,14 @@ void cryptography_menu(vector<Image*>& loaded_images, vector<string>& image_name
         break;
       }
       case 2: {
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
         cout << "Enter Caesar shift value (or 'd' for default 5): ";
         cin >> input;
         caesar_shift = (input == "d") ? 5 : stoi(input);
@@ -95,6 +107,14 @@ void cryptography_menu(vector<Image*>& loaded_images, vector<string>& image_name
         break;
       }
       case 3: {
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
         cout << "Choose substitution table source:\n";
         cout << "1. Use default table\n";
         cout << "2. Load from file\n";

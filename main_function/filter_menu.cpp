@@ -5,10 +5,6 @@ using namespace std;
 int mosaic_block_size = 5;
 int gaussian_sd = 1;
 int luminance_scale = 20;
-double laplacian_strength = 1.0;
-double fisheye_distortion = 1.0;
-double fisheye_centerX = 0.5;
-double fisheye_centerY = 0.5;
 int cold_intensity = 30;
 bool cold_preserve_luminance = true;
 int warm_intensity = 30;
@@ -39,8 +35,8 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
     if (filter_options & FILTER_FLIP) cout << "HFlip ";
     if (filter_options & FILTER_MOSAIC) cout << "Mosaic(" << mosaic_block_size << ") ";
     if (filter_options & FILTER_GAUSSIAN) cout << "Gaussian(" << gaussian_sd << ") ";
-    if (filter_options & FILTER_LAPLACIAN) cout << "Laplacian(" << laplacian_strength << ") ";
-    if (filter_options & FILTER_FISHEYE) cout << "Fisheye(" << fisheye_distortion << ") ";
+    if (filter_options & FILTER_LAPLACIAN) cout << "Laplacian ";
+    if (filter_options & FILTER_FISHEYE) cout << "Fisheye ";
     if (filter_options & FILTER_COLD) cout << "Cold(" << cold_intensity << "," << (cold_preserve_luminance ? "Lum" : "NoLum") << ") ";
     if (filter_options & FILTER_WARM) cout << "Warm(" << warm_intensity << "," << (warm_preserve_luminance ? "Lum" : "NoLum") << ") ";
     if (filter_options & FILTER_LUMINANCE) cout << "Luminance(" << luminance_scale << "%) ";
@@ -48,8 +44,8 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
     cout << "1. Horizontal Flip\n";
     cout << "2. Mosaic (Block size: " << mosaic_block_size << ")\n";
     cout << "3. Gaussian Blur (SD: " << gaussian_sd << ")\n";
-    cout << "4. Laplacian Sharpen (Strength: " << laplacian_strength << ")\n";
-    cout << "5. Fisheye Effect (Distortion: " << fisheye_distortion << ")\n";
+    cout << "4. Laplacian Sharpen\n";
+    cout << "5. Fisheye Effect\n";
     cout << "6. Cold Adjustment (Intensity: " << cold_intensity << ", Luminance: " << (cold_preserve_luminance ? "Keep" : "Ignore") << ")\n";
     cout << "7. Warm Adjustment (Intensity: " << warm_intensity << ", Luminance: " << (warm_preserve_luminance ? "Keep" : "Ignore") << ")\n";
     cout << "8. Luminance Enhancement (" << luminance_scale << "%)\n";
@@ -60,14 +56,6 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
     cout << "13. Return to Previous Menu\n";
     cout << "Enter an option (1–13): ";
     cin >> choice;
-    
-    Image* img = loaded_images[img_choice-1];
-    if (img->get_channels() == 1) {
-      img = new GrayImage(img->get_width(), img->get_height(), img->gray_get_pixels());
-    } 
-    else {
-      img = new RGBImage(img->get_width(), img->get_height(), img->rgb_get_pixels());
-    }
 
     switch (choice) {
       case 1: filter_options ^= FILTER_FLIP; break;
@@ -81,9 +69,8 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
       case 9: {
         int param_choice;
         cout << "Set which parameter?\n2. Mosaic Block Size\n3. Gaussian SD\n"
-             << "4. Laplacian Strength\n5. Fisheye Distortion & Center\n"
              << "6. Cold Filter\n7. Warm Filter\n8. Luminance Scale\n"
-             << "Enter choice (2-8): ";
+             << "Enter choice (2-3,6-8): ";
         cin >> param_choice;
         switch (param_choice) {
           case 2:
@@ -93,16 +80,6 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
           case 3:
             cout << "Enter Gaussian blur SD (1-10): ";
             cin >> gaussian_sd;
-            break;
-          case 4:
-            cout << "Enter Laplacian strength (0.1-3.0): ";
-            cin >> laplacian_strength;
-            break;
-          case 5:
-            cout << "Enter fisheye distortion (0.1-2.0): ";
-            cin >> fisheye_distortion;
-            cout << "Enter center X,Y (0.0-1.0, space separated): ";
-            cin >> fisheye_centerX >> fisheye_centerY;
             break;
           case 6:
             cout << "Enter cold intensity (0-100): ";
@@ -127,13 +104,30 @@ void filter_menu(vector<Image*>& loaded_images, vector<string>& image_names) {
         break;
       }
       case 10: {
-        applyFilters(*img, filter_options, mosaic_block_size, gaussian_sd, laplacian_strength, fisheye_distortion, fisheye_centerX, fisheye_centerY, cold_intensity, cold_preserve_luminance, warm_intensity, warm_preserve_luminance, luminance_scale);
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
+        applyFilters(*img, filter_options, mosaic_block_size, gaussian_sd, cold_intensity, cold_preserve_luminance, warm_intensity, warm_preserve_luminance, luminance_scale);
         img->Display_X_Server();
         press_enter_to_continue();
+        delete img;
         break;
       }
       case 11: {
-        applyFilters(*img, filter_options, mosaic_block_size, gaussian_sd, laplacian_strength, fisheye_distortion, fisheye_centerX, fisheye_centerY, cold_intensity, cold_preserve_luminance, warm_intensity, warm_preserve_luminance, luminance_scale);
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
+        applyFilters(*img, filter_options, mosaic_block_size, gaussian_sd, cold_intensity, cold_preserve_luminance, warm_intensity, warm_preserve_luminance, luminance_scale);
         string original_path = image_names[img_choice - 1];
         string original_filename;
         size_t last_slash = original_path.find_last_of("/\\");

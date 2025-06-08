@@ -1,7 +1,9 @@
 # ompiler & Linker settings 
 CXX = g++
 CXXFLAGS = -I ./inc -I ./main_function -I ./third-party/CImg -I ./third-party/libjpeg -I ./Data-Loader -std=c++11
-OPTFLAGS = -march=native -flto -funroll-loops -finline-functions -ffast-math -O3
+#OPTFLAGS = -march=native -flto -funroll-loops -finline-functions -ffast-math -O3
+#OPTFLAGS = -march=x86-64 -O2 -g -fno-tree-vectorize
+OPTFLAGS = -march=core2 -O2 -g
 WARNINGS = -g -Wall
 LINKER = -L/usr/X11R6/lib -lm -lpthread -lX11 -L./third-party/libjpeg -ljpeg -lpng
 

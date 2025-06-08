@@ -238,7 +238,7 @@ bool Data_Loader::List_Directory(string directoryPath, vector<string> &filenames
     while ((entry = readdir(dp))){
         // store all the .png filename into vector
         if(string(entry->d_name) == "." || string(entry->d_name) == "..") continue;
-        filenames.push_back(directoryPath + "/" + string(entry->d_name));
+        filenames.push_back(entry->d_name/*directoryPath + "/" + string(entry->d_name)*/);
     }
 
     closedir(dp);

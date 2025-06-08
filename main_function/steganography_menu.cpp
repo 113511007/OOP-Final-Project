@@ -31,23 +31,39 @@ void steganography_menu(vector<Image*>& loaded_images, vector<string>& image_nam
     cout << "Enter option: "; 
     cin >> choice; 
     
-    Image* img = loaded_images[img_choice-1];
-    if (img->get_channels() == 1) img = new GrayImage (loaded_images[img_choice-1]->get_width(), loaded_images[img_choice-1]->get_height(), loaded_images[img_choice-1]->gray_get_pixels());
-    else img = new RGBImage (loaded_images[img_choice-1]->get_width(), loaded_images[img_choice-1]->get_height(), loaded_images[img_choice-1]->rgb_get_pixels());
-    
     if (decrypt) { 
       switch (choice) { 
-        case 1: 
+        case 1: {
+          Image* original = loaded_images[img_choice - 1];
+          Image* img = nullptr;
+          if (original->get_channels() == 1) {
+            img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+          } 
+          else {
+            img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+          }
           cout << "Decrypting image...\n";
-          cout << "Embedded message:" << applyDecryption(img, DE_LSB) << "\n"; 
+          cout << "Embedded message: " << applyDecryption(img, DE_LSB) << "\n"; 
+          delete img;
           press_enter_to_continue(); 
           break; 
-        case 2: 
+        }
+        case 2: {
+          Image* original = loaded_images[img_choice - 1];
+          Image* img = nullptr;
+          if (original->get_channels() == 1) {
+            img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+          } 
+          else {
+            img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+          }
           cout << "Decrypting image...\n";
-          cout << "Embedded message:" << applyDecryption(img, DE_BITPLANE) << "\n"; 
+          cout << "Embedded message: " << applyDecryption(img, DE_BITPLANE) << "\n"; 
+          delete img;
           press_enter_to_continue(); 
           break; 
-        case 3: 
+        }
+        case 3:
           break; 
         default: 
           cout << "Invalid option.\n"; 
@@ -64,7 +80,15 @@ void steganography_menu(vector<Image*>& loaded_images, vector<string>& image_nam
     size_t last_slash;
     
     switch (choice) { 
-      case 1: 
+      case 1: {
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
         cout << "Enter message to embed (or 'd' for default - Hello World): "; 
         cin.ignore(); 
         getline(cin, message); 
@@ -81,7 +105,16 @@ void steganography_menu(vector<Image*>& loaded_images, vector<string>& image_nam
         img->Display_X_Server();
         press_enter_to_continue();
         break; 
-      case 2: 
+      }
+      case 2: {
+        Image* original = loaded_images[img_choice - 1];
+        Image* img = nullptr;
+        if (original->get_channels() == 1) {
+          img = new GrayImage(original->get_width(), original->get_height(), original->gray_get_pixels());
+        } 
+        else {
+          img = new RGBImage(original->get_width(), original->get_height(), original->rgb_get_pixels());
+        }
         cout << "Enter message to embed (or 'd' for default - Hello World): ";
         cin.ignore(); 
         getline(cin, message); 
@@ -98,6 +131,7 @@ void steganography_menu(vector<Image*>& loaded_images, vector<string>& image_nam
         img->Display_X_Server();
         press_enter_to_continue();
         break; 
+      }
       case 3: 
         return; 
       default: 

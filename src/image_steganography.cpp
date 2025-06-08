@@ -25,10 +25,6 @@ vector<bool> stringToBits(const string& message) {
 
 string bitsToString(const vector<bool>& bits) {
   if (bits.size() < 32) return "";
-  for (size_t i = 0; i < min(bits.size(), 64UL); ++i) {
-    cout << bits[i];
-    if (i % 8 == 7) cout << " ";
-  }
   uint32_t len = 0;
   for (int i = 0; i < 32; ++i) {
     len |= bits[i] << (31 - i);
