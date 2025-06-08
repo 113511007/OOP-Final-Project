@@ -1,26 +1,46 @@
-1.編譯方式與預設相同：
+C++ 圖片處理系統說明文件
+======================
 
-# compile
-$ make               # default
-$ make VERBOSE=1     # check out what make actually do
-$ make -j            # compile in parallel (save time, suggest)
+本專案是一個用 C++ 實作的互動式圖片處理系統，
+支援彩色與灰階圖片載入、資料夾批次處理、
+圖片加密與資訊隱藏功能。透過選單操作，
+使用者可輕鬆進行各種圖片處理與儲存。
 
-2.執行方式與預設相同：
-# run your program
+----------------------
+【編譯方式】
+----------------------
+# 預設編譯
+$ make
+
+# 顯示詳細編譯過程（除錯用）
+$ make VERBOSE=1
+
+# 使用多核心平行編譯（推薦，加速編譯時間）
+$ make -j
+
+----------------------
+【執行方式】
+----------------------
+# 執行主程式
 $ ./Image_Processing
 
-3.記憶體檢查方式與預設相同：
-# Dynamic memory check (Need to disable the Display_X_Server...)
+----------------------
+【記憶體檢查方式】
+----------------------
+# 動態記憶體檢查（需關閉圖片視窗顯示 X Server）
 $ make check
 
-4.執行時每個case選擇都是單選
-
-5.遇到press_enter_to_continue有時按一次enter會卡住，須按兩次enter
-
-6.X_server展示圖片後，要關掉視窗才能進行下一步
-
-7.main_function資料夾儲存各種driven code
-
-8.image_encryption被拆分成兩組檔案：image_cryptography.h/.cpp與image_steganography.h/.cpp
-
-9.執行時，按下save and return後，所有列表上的圖片都會被下載到資料夾Processed_Image-Folder，並清空原有的檔案
+----------------------
+【使用注意事項】
+----------------------
+1. 所有選單操作皆為「單選模式」，一次只能選一個選項執行。
+2. 執行過程中遇到「press_enter_to_continue」時，
+   有時需連按兩次 Enter 才能繼續。
+3. 展示圖片時，需「手動關閉視窗」後程式才會繼續執行。
+4. main_function 資料夾中儲存各種主選單驅動程式（driven code）。
+5. 圖片加密模組被拆成兩組檔案：
+   - image_cryptography.h/.cpp：負責傳統加密（XOR、Caesar 等）
+   - image_steganography.h/.cpp：負責資訊隱藏（LSB 編碼等）
+6. 按下「Save and Return」後，
+   所有列表上的圖片將會儲存至「Processed_Image-Folder」資料夾，
+   並清除當前已載入的圖片。
